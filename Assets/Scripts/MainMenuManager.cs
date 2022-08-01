@@ -1,11 +1,17 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using System.IO;
 
 public class MainMenuManager : MonoBehaviour
 {
     public static MainMenuManager Instance;
-    public static string playerName; 
+    public string playerName = ""; 
+    public BestScore bestScore;
+    public InputField player;
+
+    public Text BestScoreText; 
      private void Awake()
     {
         if (Instance != null)
@@ -15,35 +21,46 @@ public class MainMenuManager : MonoBehaviour
         }
         Instance = this;
         DontDestroyOnLoad(gameObject);
-        //LoadName(); 
+        LoadBestScore();
+        BestScoreText.text = "Best Score: " + bestScore.playerName + ": " + bestScore.score;
+
     }
 
-//     [System.Serializable]
-//     class SaveData
-//     {
-//         public Color TeamColor;
-//     }
+    [System.Serializable]
+    public class BestScore
+    {
+        public string playerName;
+        public int score;
+        public string lastPlayer;
+    }
 
-//     public void SaveColor()
-// {
-//         SaveData data = new SaveData();
-//         data.TeamColor = TeamColor;
+    public void SaveBestScore()
+    {
 
-//         string json = JsonUtility.ToJson(data);
+        string json = JsonUtility.ToJson(bestScore);
     
-//         File.WriteAllText(Application.persistentDataPath + "/savefile.json", json);
-//     }
+        File.WriteAllText(Application.persistentDataPath + "/bestscore.json", json);
+    }
 
-//     public void LoadColor()
-//     {
-//         string path = Application.persistentDataPath + "/savefile.json";
-//         if (File.Exists(path))
-//         {
-//             string json = File.ReadAllText(path);
-//             SaveData data = JsonUtility.FromJson<SaveData>(json);
+    public void LoadBestScore()
+    {
+        bestScore.playerName = "";
+        bestScore.score = 0;
+        bestScore.lastPlayer = "";
 
-//             TeamColor = data.TeamColor;
-//         }
-//     }
+        string path = Application.persistentDataPath + "/bestscore.json";
+        if (File.Exists(path))
+        {
+            string json = File.ReadAllText(path);
+            bestScore = JsonUtility.FromJson<BestScore>(json);
+            player.text = bestScore.lastPlayer;
+        } 
+    }
+
+    public void ChangePlayerName() {
+        playerName = player.text;
+        bestScore.lastPlayer = player.text;
+        SaveBestScore();
+    }
 
 }
